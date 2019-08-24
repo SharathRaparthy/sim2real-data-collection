@@ -1,6 +1,8 @@
 import random
 import numpy as np
 from gym_ergojr.sim.single_robot import SingleRobot
+import learners
+
 
 class GoalBabbling(object):
     def __init__(self, action_noise, num_retries):
@@ -8,16 +10,17 @@ class GoalBabbling(object):
         self.retries = num_retries
         self.goal_y_range = [-0.12, 0.12]
         self.goal_z_range = [0.02, 0.24]
-        self.robot = SingleRobot(debug=True)
+        self.robot = SingleRobot(debug=False)
+        self._nn_set = learners.NNSet()
 
     def nearest_neighbor(self, goal, history):
         """Return the motor command of the nearest neighbor of the goal"""
-        nn_command, nn_dist = None, float('inf')  # naive nearest neighbor search.
-        for m_command, effect in history:
-            if self.dist(effect, goal) < nn_dist:
-                nn_command, nn_dist = m_command, self.dist(effect, goal)
-        nn_command[0], nn_command[3] = 0, 0
-        return nn_command
+        if len(history) < len(self._nn_set):  # HACK
+            self._nn_set = learners.NNSet()
+        for m_command, effect in history[len(self._nn_set):]:
+            self._nn_set.add(m_command, y=effect)
+        idx = self._nn_set.nn_y(goal)[1][0]
+        return history[idx][0]
 
     def add_noise(self, nn_command):
         new_command = []
@@ -31,30 +34,28 @@ class GoalBabbling(object):
     def sample_action(self):
         action = np.random.uniform(-1, 1, 6)
         action[0], action[3] = 0, 0
+        return action
+
+    def action_retries(self, goal, history):
+        history_local = []
+        goal = np.asarray([goal])
+        action = self.nearest_neighbor(goal, history)
+        for _ in range(self.retries):
+            action_noise = self.add_noise(action)
+            _, end_position = self.perform_action(action_noise)
+            history_local.append((action_noise, end_position))
+        action_new = self.nearest_neighbor(goal, history_local)
+        return action_new
+
+    def perform_action(self, action):
         self.robot.act2(action)
         self.robot.step()
         end_pos = self.robot.get_tip()[0][1:]
         return action, end_pos
 
-    def action_retries(self, goal, history):
-        history_local = []
-        action = self.nearest_neighbor(goal, history)
-        for _ in range(self.retries):
-            action_noise = self.add_noise(action)
-            self.robot.act2(action)
-            self.robot.step()
-            end_position = self.robot.get_tip()[0][1:]
-            history_local.append((action_noise, end_position))
-        action_new = self.nearest_neighbor(goal, history_local)
-        self.robot.act2(action_new)
-        self.robot.step()
-        end_pos = self.robot.get_tip()[0][1:]
-        return action_new, end_pos
-
-
     @staticmethod
     def dist(a, b):
-        return sum((a_i - b_i) ** 2 for a_i, b_i in zip(a, b))
+        return np.linalg.norm(a-b) # We dont need this method anymore
 
 
 if __name__ == '__main__':
