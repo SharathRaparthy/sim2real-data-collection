@@ -4,6 +4,7 @@ from gym_ergojr.sim.single_robot import SingleRobot
 from scripts.goal_babbling import GoalBabbling
 import matplotlib.pyplot as plt
 
+# 33-35 doesnt do anything, 44 should be in goal_babbling, using goal_y/z_range, in general reset+step+set+step instead of act,
 
 total_steps = 200 * 100
 rest_interval = 10 * 100
