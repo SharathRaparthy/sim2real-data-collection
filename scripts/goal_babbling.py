@@ -8,10 +8,10 @@ class GoalBabbling(object):
     def __init__(self, action_noise, num_retries):
         self.noise = action_noise
         self.retries = num_retries
-        self.goal_y_range = [-0.12, 0.12]
-        self.goal_z_range = [0.02, 0.24]
         self.robot = SingleRobot(debug=False)
         self._nn_set = learners.NNSet()
+        np.random.seed(seed=225)
+        random.seed(225)
 
     def nearest_neighbor(self, goal, history):
         """Return the motor command of the nearest neighbor of the goal"""
@@ -23,12 +23,11 @@ class GoalBabbling(object):
         return history[idx][0]
 
     def add_noise(self, nn_command):
-        new_command = []
-        for m_i in nn_command:
-            max_i = min(1, m_i + 2 * self.noise * 1)
-            min_i = max(-1, m_i + 2 * self.noise * -1)
-            new_command.append(random.uniform(min_i, max_i))
+        action = np.asarray(nn_command)
+        action_noise = np.random.uniform(-self.noise, self.noise, 6)
+        new_command = action + action_noise
         new_command[0], new_command[3] = 0, 0
+        new_command = np.clip(new_command, -1, 1)
         return new_command
 
     def sample_action(self):
