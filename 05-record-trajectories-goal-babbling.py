@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 seed=225
 random.seed(seed)
 np.random.seed(seed=seed)
+# 33-35 doesnt do anything, 44 should be in goal_babbling, using goal_y/z_range, in general reset+step+set+step instead of act,
+
 total_steps = 200 * 100
 rest_interval = 10 * 100
 freq = 10
