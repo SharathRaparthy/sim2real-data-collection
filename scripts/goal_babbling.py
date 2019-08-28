@@ -41,16 +41,19 @@ class GoalBabbling(object):
         action = self.nearest_neighbor(goal, history)
         for _ in range(self.retries):
             action_noise = self.add_noise(action)
-            _, end_position = self.perform_action(action_noise)
+            _, end_position, obs = self.perform_action(action_noise)
             history_local.append((action_noise, end_position))
         action_new = self.nearest_neighbor(goal, history_local)
         return action_new
 
     def perform_action(self, action):
-        self.robot.act2(action)
+        posvel = np.zeros((12))
+        posvel[:6] = action
+        self.robot.set(posvel)
         self.robot.step()
         end_pos = self.robot.get_tip()[0][1:]
-        return action, end_pos
+        obs = self.robot.observe()
+        return action, end_pos, obs
 
     @staticmethod
     def dist(a, b):

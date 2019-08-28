@@ -13,6 +13,7 @@ rest_interval = 10 * 100
 freq = 10
 count = 0
 steps_until_resample = 100/freq
+max_history_len = 15000
 
 #HYPERPARAMETERS
 SAMPLE_NEW_GOAL = 1
@@ -52,6 +53,8 @@ for action_noise in ACTION_NOISE:
                             else goal_babbling.action_retries(goal, history)
                     count += 1
                 _, end_position = goal_babbling.perform_action(action)
+                if len(history) >= max_history_len:
+                    del history[0]
                 history.append((action, end_position))
                 end_pos.append(end_position)
                 goal_positions.append(goal)

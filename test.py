@@ -1,21 +1,15 @@
-from gym_ergojr.sim.single_robot import SingleRobot
-import time
+import matplotlib.pyplot as plt
 import numpy as np
-robot = SingleRobot(debug=True)
-action = [0, 0, -1, 0, -1, 1]
-robot.reset()
-robot.step()
-posvel = np.zeros((12))
-for _ in range(100):
-    robot.act2(action)
-    robot.step()
-    obs = robot.observe()
-    end_pos = robot.get_tip()[0][1:]
-    print(f'End position before : {end_pos}')
-    posvel[:6] = obs[:6]
-    robot.set(posvel)
-    robot.step()
-    end_pos = robot.get_tip()[0][1:]
-    print(f'End position after : {end_pos}')
-
-
+import os
+file_path = os.getcwd() + '/files/225/numpy_files/pos-action-noise-0.2-retries-5-eps-0.2.npz'
+file = np.load(file_path)
+final_pos = file["position"]
+final_goals = file["goals"]
+fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(12,6))
+ax1.scatter(final_pos[:, 0], final_pos[:, 1], alpha=0.5, linewidths=1)
+ax1.set_xlim(-0.1436, 0.22358)
+ax1.set_ylim(0.016000, 0.25002)
+ax1.set_title(f"End effector positions")
+ax2.scatter(final_goals[:, 0], final_goals[:, 1], alpha=0.5, linewidths=1)
+ax2.set_title(f'Goals sampled')
+plt.show()
