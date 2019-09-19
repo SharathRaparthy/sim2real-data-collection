@@ -1,16 +1,16 @@
+import time
 import random
 import os
 import numpy as np
-from gym_ergojr.sim.single_robot import SingleRobot
 from scripts.goal_babbling import GoalBabbling
 import matplotlib.pyplot as plt
 
-seed=225
+seed = 225
 random.seed(seed)
 np.random.seed(seed=seed)
 method = "goal-babbling"
 
-total_steps = 2 * 100
+total_steps = 4000 * 100
 rest_interval = 10 * 100
 freq = 10
 count = 0
@@ -26,9 +26,7 @@ EPSILON = 0.2
 goal_babbling = GoalBabbling(ACTION_NOISE, NUMBER_OF_RETRIES)
 
 # Reset the robot
-robot = SingleRobot(debug=False)  
-robot.reset()
-robot.step()
+goal_babbling.reset_robot()
 
 end_pos = []
 history = []
@@ -39,7 +37,6 @@ count = 0
 file_path = '/home/sharath/sim2real-data-collection/'
 if not os.path.isdir(file_path + f'data/freq{freq}/{method}'):
     os.makedirs(file_path + f'data/freq{freq}/{method}')
-    print('yeyy')
 
 # Create numpy arrays to store actions and observations
 sim_trajectories = np.zeros((total_steps, 12))
@@ -47,8 +44,7 @@ actions = np.zeros((total_steps, 6))
 for epi in range(total_steps):
     if epi % rest_interval == 0:  # Reset the robot after every rest interval
         print(f'Taking Rest at {epi}')
-        robot.reset()
-        robot.step()
+        goal_babbling.reset_robot()
 
     if epi % steps_until_resample == 0:
         goal = [random.uniform(-0.1436, 0.22358), random.uniform(0.016000, 0.25002)]
@@ -72,7 +68,8 @@ for epi in range(total_steps):
 final_pos = np.asarray(end_pos)
 final_goals = np.asarray(goal_positions)
 np.savez(file_path + f'data/freq{freq}/{method}/goals_and_positions.npz', positions=final_pos, goals=final_goals)
-np.savez(file_path + f'data/freq{freq}/{method}/actions_trajectories_{total_steps / 100}.npz', actions=actions, sim_trajectories=sim_trajectories)
+np.savez(file_path + f'data/freq{freq}/{method}/actions_trajectories_{total_steps / 100}.npz',
+         actions=actions, sim_trajectories=sim_trajectories)
 
 # Plot the end_pos, goals and 2D histogram of end_pos
 fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True, sharey=True, figsize=(12, 6))

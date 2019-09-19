@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-file_path = os.getcwd() + '/data/freq1/'
+file_path = os.getcwd() + '/data/freq1/goal-babbling/'
 
-data = pickle.load(open(os.path.join(file_path, "01-lstm-data.pkl"), "rb"))
+data = pickle.load(open(os.path.join(file_path, "01-lstm-goal-babbling-data.pkl"), "rb"))
 
 print(data.keys())  # ['real-posvel', 'actions', 'next-real-posvel', 'next-sim-posvel']
 real_posvel = data['real-posvel']
@@ -28,13 +28,13 @@ print("next_real_vel", next_real_posvel[:, 6:].min(), next_real_posvel[:, 6:].ma
 print("next_sim_pos", next_sim_posvel[:, :6].min(), next_sim_posvel[:, :6].max(), next_sim_posvel[:, :6].mean())
 print("next_sim_vel", next_sim_posvel[:, 6:].min(), next_sim_posvel[:, 6:].max(), next_sim_posvel[:, 6:].mean())
 
-start = 9000
+start = 0
 samples = 300
 end = start + samples
 
 x = np.arange(start, end)
-
-
+#
+#
 # print ("first motor REAL:",real_posvel[:,0].min(), real_posvel[:,0].max(), real_posvel[:,0].mean())
 # print ("first motor SIM:",next_sim_posvel[:,0].min(), next_sim_posvel[:,0].max(), next_sim_posvel[:,0].mean())
 #
@@ -49,7 +49,7 @@ for i in range(3):
     plt.plot(x, real_posvel[start:end, i + 6], label=f"motor {i} vel", linestyle="dashed")
     plt.plot(x, actions[start:end, i], label=f"motor {i} action", linestyle="dotted")
 
-plt.title(f"100Hz REAL recordings from timestep {start} to {end}")
+plt.title(f"100Hz REAL goal babbling recordings from timestep {start} to {end}")
 plt.legend()
 plt.tight_layout()
 
@@ -63,7 +63,7 @@ for i in range(3):
     plt.plot(x, next_sim_posvel[start:end, i + 6], label=f"motor {i} vel", linestyle="dashed")
     plt.plot(x, actions[start:end, i], label=f"motor {i} action", linestyle="dotted")
 
-plt.title(f"100Hz SIM recordings from timestep {start} to {end}")
+plt.title(f"100Hz SIM goal babbling recordings from timestep {start} to {end}")
 plt.legend()
 plt.tight_layout()
 

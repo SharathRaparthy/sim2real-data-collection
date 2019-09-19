@@ -5,17 +5,17 @@ from gym_ergojr.sim.single_robot import SingleRobot
 from scripts.goal_babbling import GoalBabbling
 import matplotlib.pyplot as plt
 
-seed = 225
+seed = 123
 random.seed(seed)
 np.random.seed(seed=seed)
-total_steps = 200 * 100
+total_steps = 600 * 100
 rest_interval = 10 * 100
-freq = 10
+freq = 1
 count = 0
 steps_until_resample = 100/freq
 max_history_len = 15000
 
-#HYPERPARAMETERS
+# HYPERPARAMETERS
 SAMPLE_NEW_GOAL = 1
 NUMBER_OF_RETRIES = [5, 10, 20]
 ACTION_NOISE = [0.1, 0.2, 0.4]
@@ -29,9 +29,7 @@ for action_noise in ACTION_NOISE:
             goal_babbling = GoalBabbling(action_noise, num_retries)
 
             # Reset the robot
-            robot = SingleRobot(debug=False)
-            robot.reset()
-            robot.step()
+            goal_babbling.reset_robot()
 
             end_pos = []
             history = []
@@ -41,8 +39,7 @@ for action_noise in ACTION_NOISE:
             for epi in range(total_steps):
                 if epi % rest_interval == 0:
                     print(f'Taking Rest at {epi}')
-                    robot.reset()
-                    robot.step()
+                    goal_babbling.reset_robot()
 
                 if epi % steps_until_resample == 0:
                     goal = [random.uniform(-0.1436, 0.22358), random.uniform(0.016000, 0.25002)]
@@ -52,7 +49,7 @@ for action_noise in ACTION_NOISE:
                         action = goal_babbling.sample_action() if random.random() < epsilon \
                             else goal_babbling.action_retries(goal, history)
                     count += 1
-                _, end_position = goal_babbling.perform_action(action)
+                _, end_position, _ = goal_babbling.perform_action(action)
                 if len(history) >= max_history_len:
                     del history[0]
                 history.append((action, end_position))

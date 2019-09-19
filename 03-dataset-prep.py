@@ -2,20 +2,15 @@ import numpy as np
 import os
 from gym_ergojr.sim.single_robot import SingleRobot
 import pickle
+from arguments import get_args
 
 
-file_path = os.getcwd() + '/data/freq10/'
+args = get_args()
 
-action_1, trajectories_1 = np.load(file_path + '01-clean_action_trajectories.npz')["actions"], np.load(file_path + '01-real_world_trajectories.npy')
-action_2, trajectories_2 = np.load(file_path + '02-clean_action_trajectories.npz')["actions"], np.load(file_path + '02-real_world_trajectories.npy')
-action_3, trajectories_3 = np.load(file_path + '03-clean_action_trajectories.npz')["actions"], np.load(file_path + '03-real_world_trajectories.npy')
-action_4, trajectories_4 = np.load(file_path + '04-clean_action_trajectories.npz')["actions"][:100000,:], np.load(file_path + '04-real_world_trajectories.npy')[:100000,:]
-# actions = np.concatenate([action_1, action_2, action_3], axis=0)
-# trajectories = np.concatenate([trajectories_1, trajectories_2, trajectories_3], axis=0)
-actions = np.concatenate([action_1, action_2, action_3], axis=0)
-trajectories = np.concatenate([trajectories_1, trajectories_2, trajectories_3], axis=0)
+file_path = os.getcwd() + f'/data/freq{args.freq}/{args.approach}/'
 
-frequency = 1
+actions, trajectories = np.load(file_path + 'actions_trajectories_10000.npz')["actions"], np.load(file_path + 'real_world_trajectories.npy')
+
 
 robot = SingleRobot(debug=False)
 robot.reset()
@@ -33,8 +28,7 @@ trajectories[:, :6] = trajectories[:, :6]*2 - 1
 trajectories[:, 6:] += 150
 trajectories[:, 6:] /= 300
 trajectories[:, 6:] = trajectories[:, 6:]*2 - 1
-print(trajectories[1, :])
-print(actions.shape)
+
 robot.reset()
 robot.step()
 for epi in range(actions.shape[0]):
@@ -46,16 +40,20 @@ for epi in range(actions.shape[0]):
     # reset the position to real-posvel
     robot.set(dataset["real-posvel"][epi, :])
     robot.step()
+    obs = robot.observe()
     # execute the action on simulator
-    robot.act2(actions[epi, :])
+    if epi % args.freq == 0:
+        action = actions[epi, :]
+    else:
+        action += np.random.normal(0, 0.01)
+        action[0], action[3] = 0, 0
+    robot.act2(action)
     robot.step()
     obs = robot.observe()
     dataset["next-real-posvel"][epi, :] = trajectories[epi + 1, :]
     dataset["next-sim-posvel"][epi, :] = obs
 
-
-
-f = open(file_path + '10-lstm-data.pkl', 'wb')
+f = open(file_path + f'99-lstm-{args.approach}-data.pkl', 'wb')
 pickle.dump(dataset, f)
 f.close()
 
