@@ -1,15 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from gym_ergojr.sim.single_robot import SingleRobot
+from arguments import get_args
 
 robot = SingleRobot(debug=False)
+args = get_args()
 
-
-file_path = '/home/sharath/sim2real-data-collection/'
+file_path = f'/home/sharath/sim2real-data-collection/data/freq99/{args.approach}'
 np.random.seed(seed=123)
-total_steps = 300 * 100
+total_steps = 10000 * 100
 rest_interval = 10 * 100
-freq = 10
+freq = args.freq
 count = 0
 steps_until_resample = 100/freq
 
@@ -29,7 +30,9 @@ for epi in range(total_steps):
     if epi % steps_until_resample == 0:
         action = np.random.uniform(-1, 1, 6)
         action[:][0], action[:][3] = 0, 0
-
+    else:
+        action += np.random.normal(0, 0.01)
+        action[0], action[3] = 0, 0
     actions[epi, :] = action
     robot.act2(actions[epi, :])
     robot.step()
@@ -44,13 +47,13 @@ for epi in range(total_steps):
         actions[epi, :] = 0
         sim_trajectories[epi, :] = 0
 final_pos = np.asarray(end_pos)
-end_pos_path = file_path + 'random_end_pos.npy'
-np.save(end_pos_path, final_pos)
+# end_pos_path = file_path + '/random_end_pos.npy'
+# np.save(end_pos_path, final_pos)
 plt.scatter(final_pos[:, 0], final_pos[:, 1], alpha=0.5)
 plt.show()
 plt.hist2d(final_pos[:, 0], final_pos[:, 1], bins=100)
 plt.show()
 # actions = actions[bad_actions == 0]
 # sim_trajectories = sim_trajectories[bad_actions == 0]
-# np.savez(file_path + '/04-clean_action_trajectories.npz', actions=actions, trajectories=sim_trajectories)
+np.savez(file_path + '/action_trajectories.npz', actions=actions, trajectories=sim_trajectories)
 

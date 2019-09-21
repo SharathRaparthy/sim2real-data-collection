@@ -4,13 +4,16 @@ import os
 import numpy as np
 from scripts.goal_babbling import GoalBabbling
 import matplotlib.pyplot as plt
+from arguments import get_args
+
+args = get_args()
 
 seed = 225
 random.seed(seed)
 np.random.seed(seed=seed)
 method = "goal-babbling"
 
-total_steps = 4000 * 100
+total_steps = 10000 * 100
 rest_interval = 10 * 100
 freq = 10
 count = 0
@@ -35,8 +38,8 @@ goal_positions = []
 count = 0
 
 file_path = '/home/sharath/sim2real-data-collection/'
-if not os.path.isdir(file_path + f'data/freq{freq}/{method}'):
-    os.makedirs(file_path + f'data/freq{freq}/{method}')
+if not os.path.isdir(file_path + f'data/freq{args.freq}/{args.approach}'):
+    os.makedirs(file_path + f'data/freq{args.freq}/{args.approach}')
 
 # Create numpy arrays to store actions and observations
 sim_trajectories = np.zeros((total_steps, 12))
@@ -54,6 +57,9 @@ for epi in range(total_steps):
             action = goal_babbling.sample_action() if random.random() < EPSILON \
                 else goal_babbling.action_retries(goal, history)
         count += 1
+    else:
+        action += np.random.normal(0, 0.01)
+        action[0], action[3] = 0, 0
     _, end_position, observation = goal_babbling.perform_action(action)  # Perform the action and get the observation
     if len(history) >= max_history_len:
         del history[0]
@@ -67,8 +73,8 @@ for epi in range(total_steps):
 # Save the end positions, goals, actions and simulation trajectories.
 final_pos = np.asarray(end_pos)
 final_goals = np.asarray(goal_positions)
-np.savez(file_path + f'data/freq{freq}/{method}/goals_and_positions.npz', positions=final_pos, goals=final_goals)
-np.savez(file_path + f'data/freq{freq}/{method}/actions_trajectories_{total_steps / 100}.npz',
+np.savez(file_path + f'data/freq{args.freq}/{args.approach}/goals_and_positions.npz', positions=final_pos, goals=final_goals)
+np.savez(file_path + f'data/freq{args.freq}/{args.approach}/actions_trajectories.npz',
          actions=actions, sim_trajectories=sim_trajectories)
 
 # Plot the end_pos, goals and 2D histogram of end_pos

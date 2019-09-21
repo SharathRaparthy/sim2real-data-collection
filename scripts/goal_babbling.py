@@ -47,13 +47,18 @@ class GoalBabbling(object):
         return action_new
 
     def perform_action(self, action):
-        posvel = np.zeros((12))
-        posvel[:6] = action
-        self.robot.set(posvel)
+        # posvel = np.zeros((12))
+        # posvel[:6] = action
+        # self.robot.set(posvel)
+        self.robot.act2(action)
         self.robot.step()
         end_pos = self.robot.get_tip()[0][1:]
         obs = self.robot.observe()
         return action, end_pos, obs
+
+    def reset_robot(self):
+        self.robot.reset()
+        self.robot.step()
 
     @staticmethod
     def dist(a, b):
