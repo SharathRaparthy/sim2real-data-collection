@@ -3,11 +3,15 @@ import os
 import matplotlib.pyplot as plt
 # from nas.data import DATA_PATH
 import numpy as np
+from arguments import get_args
 
 
-file_path = os.getcwd() + '/data/freq1/goal-babbling/'
+args = get_args()
+args.variant = 99
+file_path = os.getcwd() + f'/data/freq{args.variant}/goal-babbling/'
 
-data = pickle.load(open(os.path.join(file_path, "01-lstm-goal-babbling-data.pkl"), "rb"))
+
+data = pickle.load(open(os.path.join(file_path, f"{args.variant}-lstm-goal-babbling-data.pkl"), "rb"))
 
 print(data.keys())  # ['real-posvel', 'actions', 'next-real-posvel', 'next-sim-posvel']
 real_posvel = data['real-posvel']
@@ -44,25 +48,31 @@ x = np.arange(start, end)
 # ==================== REAL
 print(real_posvel[:, :6])
 
-for i in range(3):
+for i in range(1):
     plt.plot(x, real_posvel[start:end, i], label=f"motor {i} pos")
     plt.plot(x, real_posvel[start:end, i + 6], label=f"motor {i} vel", linestyle="dashed")
-    plt.plot(x, actions[start:end, i], label=f"motor {i} action", linestyle="dotted")
+    plt.plot(x, actions[start:end, i + 1], label=f"motor {i} action - V{args.variant}", linestyle="dotted")
 
 plt.title(f"100Hz REAL goal babbling recordings from timestep {start} to {end}")
 plt.legend()
 plt.tight_layout()
 
-plt.show()
+# plt.show()
 
 # ==================== SIM
 
+args.variant = 10
+file_path = os.getcwd() + f'/data/freq{args.variant}/goal-babbling/'
+data = pickle.load(open(os.path.join(file_path, f"{args.variant}-lstm-goal-babbling-data.pkl"), "rb"))
 
-for i in range(3):
+real_posvel = data['real-posvel']
+actions = data["actions"]
+next_real_posvel = data["next-real-posvel"]
+next_sim_posvel = data["next-sim-posvel"]
+for i in range(1):
     plt.plot(x, next_sim_posvel[start:end, i], label=f"motor {i} pos")
     plt.plot(x, next_sim_posvel[start:end, i + 6], label=f"motor {i} vel", linestyle="dashed")
-    plt.plot(x, actions[start:end, i], label=f"motor {i} action", linestyle="dotted")
-
+    plt.plot(x, actions[start:end, i + 1], label=f"motor {i} action - V{args.variant}", linestyle="dotted")
 plt.title(f"100Hz SIM goal babbling recordings from timestep {start} to {end}")
 plt.legend()
 plt.tight_layout()
