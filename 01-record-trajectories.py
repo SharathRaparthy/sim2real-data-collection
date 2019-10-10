@@ -2,12 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from gym_ergojr.sim.single_robot import SingleRobot
 from arguments import get_args
+import os
 
 robot = SingleRobot(debug=False) # 6DOF Reacher Robot
 args = get_args()
 
-file_path = f'/home/sharath/sim2real-data-collection/data/freq99/{args.approach}'
-np.random.seed(seed=123)
+file_path = os.getcwd() + f'/data/freq{args.freq}/{args.approach}'
+np.random.seed(seed=225)
 total_steps = 10000 * 100
 rest_interval = 10 * 100
 freq = args.freq
@@ -20,17 +21,19 @@ bad_actions = np.zeros((total_steps))
 robot.reset()
 robot.step()
 end_pos = []
+
 for epi in range(total_steps):
 
-    if epi % rest_interval == 0:
+    if epi % rest_interval == 0:  # Take rest after every 10 * 100 steps
         print(f'Taking Rest at {epi}')
         robot.reset()
         robot.step()
 
-    if epi % steps_until_resample == 0:
+    if epi % steps_until_resample == 0:  # Sample a new action after certain steps
         action = np.random.uniform(-1, 1, 6)
-        action[:][0], action[:][3] = 0, 0
+        action[:][0], action[:][3] = 0, 0  # Motor 0 and 3 fixed => 4DOF
 
+    '''Perform action and record the observation and the tip position'''
     actions[epi, :] = action
     robot.act2(actions[epi, :])
     robot.step()
@@ -44,14 +47,13 @@ for epi in range(total_steps):
         count += 1
         actions[epi, :] = 0
         sim_trajectories[epi, :] = 0
+
 final_pos = np.asarray(end_pos)
-# end_pos_path = file_path + '/random_end_pos.npy'
-# np.save(end_pos_path, final_pos)
+end_pos_path = file_path + '/random_end_pos.npy'
+np.save(end_pos_path, final_pos)
 plt.scatter(final_pos[:, 0], final_pos[:, 1], alpha=0.5)
 plt.show()
 plt.hist2d(final_pos[:, 0], final_pos[:, 1], bins=100)
 plt.show()
-# actions = actions[bad_actions == 0]
-# sim_trajectories = sim_trajectories[bad_actions == 0]
 np.savez(file_path + '/action_trajectories.npz', actions=actions, trajectories=sim_trajectories)
 
