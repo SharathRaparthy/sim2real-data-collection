@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from gym_ergojr.sim.single_robot import SingleRobot
 from arguments import get_args
 
-robot = SingleRobot(debug=False)
+robot = SingleRobot(debug=False) # 6DOF Reacher Robot
 args = get_args()
 
 file_path = f'/home/sharath/sim2real-data-collection/data/freq99/{args.approach}'
@@ -30,9 +30,7 @@ for epi in range(total_steps):
     if epi % steps_until_resample == 0:
         action = np.random.uniform(-1, 1, 6)
         action[:][0], action[:][3] = 0, 0
-    else:
-        action += np.random.normal(0, 0.01)
-        action[0], action[3] = 0, 0
+
     actions[epi, :] = action
     robot.act2(actions[epi, :])
     robot.step()

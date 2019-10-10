@@ -9,6 +9,7 @@ def get_args():
     parser.add_argument('--freq', type=int, default=1, help='the frequency by which recording is done')
     parser.add_argument('--num-steps', type=int, default=100, help='the number of epochs to train the agent')
     parser.add_argument('--approach', type=str, default='motor_babbling', help='the number of epochs to train the agent')
+    parser.add_argument('--env-name', type=str, default='ErgoPusher', help='the number of epochs to train the agent')
 
     args = parser.parse_args()
 
