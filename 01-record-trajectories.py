@@ -8,6 +8,10 @@ robot = SingleRobot(debug=False) # 6DOF Reacher Robot
 args = get_args()
 
 file_path = os.getcwd() + f'/data/freq{args.freq}/{args.approach}'
+
+if not os.path.isdir(file_path):
+    os.makedirs(file_path)
+
 np.random.seed(seed=225)
 total_steps = 10000 * 100
 rest_interval = 10 * 100
@@ -49,11 +53,11 @@ for epi in range(total_steps):
         sim_trajectories[epi, :] = 0
 
 final_pos = np.asarray(end_pos)
-end_pos_path = file_path + '/random_end_pos.npy'
+end_pos_path = file_path + f'/random_end_pos_{args.freq}.npy'
 np.save(end_pos_path, final_pos)
 plt.scatter(final_pos[:, 0], final_pos[:, 1], alpha=0.5)
 plt.show()
 plt.hist2d(final_pos[:, 0], final_pos[:, 1], bins=100)
 plt.show()
-np.savez(file_path + '/action_trajectories.npz', actions=actions, trajectories=sim_trajectories)
+# np.savez(file_path + '/action_trajectories.npz', actions=actions, trajectories=sim_trajectories)
 

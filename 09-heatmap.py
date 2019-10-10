@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 # from nas.data import DATA_PATH
 import numpy as np
 from arguments import get_args
+from arguments import get_args
 
 
-file_path = os.getcwd() + '/data/freq99/goal-babbling/'
+args = get_args()
+file_path = os.getcwd() + f'/data/freq{args.freq}/{args.approach}/'
 
 pos_action_noise = np.load(file_path + 'goals_and_positions.npz')
 
