@@ -1,13 +1,16 @@
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 from gym_ergojr.sim.abstract_robot import PusherRobot
 from arguments import get_args
 
-robot = PusherRobot(debug=False) # 3DOF Pusher
+robot = PusherRobot(action_noise=False, obs_noise=False, debug=False) # 3DOF Pusher
 args = get_args()
 
-file_path = os.getcwd() + f'/data/{args.env_name}/freq99/{args.approach}'
+file_path = os.getcwd() + '/data/{}/freq{}/{}/'.format(args.env_name, args.freq, args.approach)
+
+if not os.path.isdir(file_path):
+    os.makedirs(file_path)
+
 np.random.seed(seed=123)
 total_steps = 10000 * 100
 rest_interval = 10 * 100
@@ -25,7 +28,7 @@ end_pos = []
 for epi in range(total_steps):
 
     if epi % rest_interval == 0:
-        print(f'Taking Rest at {epi}')
+        print('Taking Rest at {}'.format(epi))
         robot.hard_reset()
         robot.rest()
         robot.step()

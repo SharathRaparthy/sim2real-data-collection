@@ -7,7 +7,7 @@ import os
 robot = SingleRobot(debug=False) # 6DOF Reacher Robot
 args = get_args()
 
-file_path = os.getcwd() + f'/data/freq{args.freq}/{args.approach}'
+file_path = os.getcwd() + '/data/freq{}/{}'.format(args.freq, args.approach)
 
 if not os.path.isdir(file_path):
     os.makedirs(file_path)
@@ -29,7 +29,7 @@ end_pos = []
 for epi in range(total_steps):
 
     if epi % rest_interval == 0:  # Take rest after every 10 * 100 steps
-        print(f'Taking Rest at {epi}')
+        print('Taking Rest at {}'.format(epi))
         robot.reset()
         robot.step()
 
@@ -53,7 +53,7 @@ for epi in range(total_steps):
         sim_trajectories[epi, :] = 0
 
 final_pos = np.asarray(end_pos)
-end_pos_path = file_path + f'/random_end_pos_{args.freq}.npy'
+end_pos_path = file_path + '/random_end_pos_{}.npy'.format(args.freq)
 np.save(end_pos_path, final_pos)
 plt.scatter(final_pos[:, 0], final_pos[:, 1], alpha=0.5)
 plt.show()
