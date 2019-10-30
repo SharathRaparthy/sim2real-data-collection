@@ -1,14 +1,20 @@
 import random
 import numpy as np
 from gym_ergojr.sim.single_robot import SingleRobot
+from gym_ergojr.sim.abstract_robot import PusherRobot
 import learners
 
 
 class GoalBabbling(object):
-    def __init__(self, action_noise, num_retries):
+    def __init__(self, action_noise, num_retries, task):
         self.noise = action_noise
         self.retries = num_retries
-        self.robot = SingleRobot(debug=False)
+        self.task = task
+        if task == 'pusher':
+            self.robot = PusherRobot()
+        else:
+            self.robot = SingleRobot(debug=False)
+        self.action_len = len(self.robot.motor_ids)
         self._nn_set = learners.NNSet()
         np.random.seed(seed=225)
         random.seed(225)
@@ -24,15 +30,17 @@ class GoalBabbling(object):
 
     def add_noise(self, nn_command):
         action = np.asarray(nn_command)
-        action_noise = np.random.uniform(-self.noise, self.noise, 6)
+        action_noise = np.random.uniform(-self.noise, self.noise, self.action_len)
         new_command = action + action_noise
-        new_command[0], new_command[3] = 0, 0
+        if self.task == 'reacher':
+            new_command[0], new_command[3] = 0, 0
         new_command = np.clip(new_command, -1, 1)
         return new_command
 
     def sample_action(self):
-        action = np.random.uniform(-1, 1, 6)
-        action[0], action[3] = 0, 0
+        action = np.random.uniform(-1, 1, self.action_len)
+        if self.task == 'reacher':
+            action[0], action[3] = 0, 0
         return action
 
     def action_retries(self, goal, history):
@@ -47,17 +55,16 @@ class GoalBabbling(object):
         return action_new
 
     def perform_action(self, action):
-        # posvel = np.zeros((12))
-        # posvel[:6] = action
-        # self.robot.set(posvel)
-        self.robot.act2(action)
+        self.robot.act(action)
         self.robot.step()
-        end_pos = self.robot.get_tip()[0][1:]
+        end_pos = self.robot.get_tip()[1:]
         obs = self.robot.observe()
         return action, end_pos, obs
 
     def reset_robot(self):
-        self.robot.reset()
+        if self.task == 'pusher':
+            self.robot.hard_reset()
+        self.robot.rest()
         self.robot.step()
 
     @staticmethod
