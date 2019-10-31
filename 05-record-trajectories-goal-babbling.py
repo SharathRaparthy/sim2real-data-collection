@@ -11,7 +11,6 @@ args = get_args()
 seed = 225
 random.seed(seed)
 np.random.seed(seed=seed)
-method = "goal-babbling"
 
 total_steps = 10000 * 100
 rest_interval = 10 * 100
@@ -38,8 +37,8 @@ goal_positions = []
 count = 0
 
 file_path = '/home/sharath/sim2real-data-collection/'
-if not os.path.isdir(file_path + 'data/freq{}/{}'.format(args.freq, args.approach)):
-    os.makedirs(file_path + 'data/freq{}/{}'.format(args.freq, args.approach))
+if not os.path.isdir(file_path + 'data/ErgoPusher/freq{}/{}'.format(args.freq, args.approach)):
+    os.makedirs(file_path + 'data/ErgoPusher/freq{}/{}'.format(args.freq, args.approach))
 
 
 print('================================================')
@@ -65,7 +64,6 @@ for epi in range(total_steps):
                 else goal_babbling.action_retries(goal, history)
         count += 1
     else:
-        action += np.random.normal(0, 0.01)
         if task == 'reacher':
             action[0], action[3] = 0, 0
     _, end_position, observation = goal_babbling.perform_action(action)  # Perform the action and get the observation
@@ -81,9 +79,9 @@ for epi in range(total_steps):
 # Save the end positions, goals, actions and simulation trajectories.
 final_pos = np.asarray(end_pos)
 final_goals = np.asarray(goal_positions)
-np.savez(file_path + 'data/freq{}/{}/goals_and_positions.npz'.format(args.freq, args.approach)
+np.savez(file_path + 'data/ErgoPusher/freq{}/{}/goals_and_positions.npz'.format(args.freq, args.approach)
          , positions=final_pos, goals=final_goals)
-np.savez(file_path + 'data/freq{}/{}/actions_trajectories.npz'.format(args.freq, args.approach),
+np.savez(file_path + 'data/ErgoPusher/freq{}/{}/actions_trajectories.npz'.format(args.freq, args.approach),
          actions=actions, sim_trajectories=sim_trajectories)
 
 # Plot the end_pos, goals and 2D histogram of end_pos
@@ -94,12 +92,12 @@ ax1.set_ylim(0.016000, 0.25002) # Change axis limits
 ax1.set_title("End effector positions for {} trajectories".format(total_steps / 100))
 ax2.scatter(final_goals[:, 0], final_goals[:, 1], alpha=0.5, linewidths=1)
 ax2.set_title('Goals sampled')
-plt.savefig(file_path + 'data/freq{}/{}/positions-goals.png'.format(freq, method))
+plt.savefig(file_path + 'data/ErgoPusher/freq{}/{}/positions-goals.png'.format(freq, args.approach))
 plt.close()
 # Plot the 2D histogram and save it.
 plt.hist2d(final_pos[:, 0], final_pos[:, 1], bins=100)
 plt.xlim(-0.1436, 0.22358)
 plt.ylim(0.016000, 0.25002)
 plt.title("2D Histogram of end effector positions")
-plt.savefig(file_path + 'data/freq{}/{}/histogram.png'.format(freq, method))
+plt.savefig(file_path + 'data/ErgoPusher/freq{}/{}/histogram.png'.format(freq, args.approach))
 
