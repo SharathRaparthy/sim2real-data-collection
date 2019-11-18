@@ -4,17 +4,20 @@ import os
 from arguments import get_args
 from scripts.goal_babbling import GoalBabbling
 import matplotlib.pyplot as plt
+from gym_ergojr.sim.objects import Puck
 
 seed = 123
+args = get_args()
+
 random.seed(seed)
 np.random.seed(seed=seed)
-total_steps = 600 * 100
+total_steps = 1000 * 100
 rest_interval = 10 * 100
-freq = 1
+freq = args.freq
 count = 0
 steps_until_resample = 100/freq
 max_history_len = 15000
-args = get_args()
+puck = Puck()
 
 # HYPERPARAMETERS
 SAMPLE_NEW_GOAL = 1
@@ -22,9 +25,10 @@ NUMBER_OF_RETRIES = [5, 10, 20]
 ACTION_NOISE = [0.1, 0.2, 0.4]
 K_NEAREST_NEIGHBOURS = 8
 EPSILON = [0.1, 0.2, 0.3]
-file_path = os.getcwd() + '/{}/files'.format(args.env_name)
+file_path = os.getcwd() + '/files/{}'.format(args.env_name)
 if not os.path.isdir(file_path):
-    os.makedirs(file_path + '/{}'.format(seed))
+    os.makedirs(file_path + '/{}/numpy_files/'.format(seed))
+    os.makedirs(file_path + '/{}/plots/'.format(seed))
 task = 'pusher'
 for action_noise in ACTION_NOISE:
     print('================================================')
@@ -50,7 +54,9 @@ for action_noise in ACTION_NOISE:
 
                 if epi % steps_until_resample == 0:
                     # goal = [random.uniform(-0.1436, 0.22358), random.uniform(0.016000, 0.25002)]  # Reacher goals
-                    goal = [random.uniform(-0.135, 0.0), random.uniform(-0.081, 0.135)]  # Pusher goals
+                    # goal = [random.uniform(-0.135, 0.0), random.uniform(-0.081, 0.135)]  # Pusher goals
+                    puck.hard_reset()
+                    goal = puck.normalize_puck()
                     if count < 10:
                         action = goal_babbling.sample_action()
                     else:
@@ -77,8 +83,8 @@ for action_noise in ACTION_NOISE:
                      position=final_pos,
                      goals=final_goals)
             plt.hist2d(final_pos[:, 0], final_pos[:, 1], bins=100)
-            plt.xlim(-0.1436, 0.22358)
-            plt.ylim(0.016000, 0.25002)
+            # plt.xlim(-0.1436, 0.22358)
+            # plt.ylim(0.016000, 0.25002)
             plt.title(label='Action Noise - {} | Num retries - {} | Epsilon : {}'.format(action_noise,
                                                                                        num_retries,
                                                                                         epsilon))
