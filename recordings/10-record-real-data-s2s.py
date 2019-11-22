@@ -4,10 +4,12 @@ import numpy as np
 from gym_ergojr.sim.abstract_robot import PusherRobot
 from gym_ergojr.sim.objects import Puck
 from arguments import get_args
+from common.envs import PusherRobotNoisy
+from common.envs import NewPuck
 
 args = get_args()
-robot = PusherRobot(action_noise=args.action_noise, obs_noise=args.obs_noise, debug=False) # 3DOF Pusher
-puck = Puck()
+robot = PusherRobotNoisy(action_noise=args.action_noise, obs_noise=args.obs_noise) # 3DOF Pusher
+puck = NewPuck()
 
 file_path = os.getcwd() + '/data/{}/freq{}/{}/'.format(args.env_name, args.freq, args.approach)
 
@@ -15,9 +17,10 @@ rest_interval = 10 * 100
 freq = args.freq
 steps_until_resample = 100/freq
 
-actions_trajectories = np.load(file_path + 'action_trajectories.npz')
+actions_trajectories = np.load(file_path + 'actions_trajectories.npz')
+print([keys for keys in actions_trajectories.keys()])
 actions = actions_trajectories["actions"]
-trajectories = actions_trajectories["trajectories"]
+trajectories = actions_trajectories["sim_trajectories"]
 real_trajectories = np.zeros((trajectories.shape[0], trajectories.shape[1]))
 
 for epi in range(actions.shape[0]):

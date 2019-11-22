@@ -4,16 +4,17 @@ from gym_ergojr.sim.single_robot import SingleRobot
 from gym_ergojr.sim.abstract_robot import PusherRobot
 import pickle
 from arguments import get_args
-from gym_ergojr.sim.objects import Puck
+from common.envs import NewPuck
+from common.envs import PusherRobotNoisy
 
 ''' Prepare the dataset for training LSTM '''
 
 args = get_args()
 
 file_path = os.getcwd() + '/data/{}/freq{}/{}/'.format(args.env_name, args.freq, args.approach)
-robot = PusherRobot(action_noise=args.action_noise, obs_noise=args.obs_noise, debug=False) # 3DOF Pusher
+robot = PusherRobotNoisy(action_noise=args.action_noise, obs_noise=args.obs_noise) # 3DOF Pusher
 
-actions, trajectories = np.load(file_path + 'action_trajectories.npz')["actions"],\
+actions, trajectories = np.load(file_path + 'actions_trajectories.npz')["actions"],\
                         np.load(file_path + 'real_world_trajectories_{}.npy'.format(args.noise_type))
 
 
@@ -23,7 +24,7 @@ dataset = {
     "next-real-posvel": np.zeros(trajectories.shape),
     "next-sim-posvel": np.zeros(trajectories.shape),
 }
-puck = Puck()
+puck = NewPuck()
 # trajectories[:, :6] += 90
 # trajectories[:, :6] /= 180
 # trajectories[:, :6] = trajectories[:, :6]*2 - 1
@@ -53,7 +54,6 @@ for epi in range(actions.shape[0]):
     # execute the action on simulator
     if epi % args.freq == 0:
         action = actions[epi, :]
-        print(epi)
 
     robot.act(action)
     robot.step()

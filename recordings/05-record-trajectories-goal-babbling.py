@@ -6,7 +6,7 @@ from scripts.goal_babbling import GoalBabbling
 import matplotlib.pyplot as plt
 from arguments import get_args
 from gym_ergojr.sim.objects import Puck
-
+from common.envs import NewPuck
 
 args = get_args()
 
@@ -26,7 +26,7 @@ K_NEAREST_NEIGHBOURS = 8
 EPSILON = 0.3
 task = args.task
 goal_babbling = GoalBabbling(ACTION_NOISE, NUMBER_OF_RETRIES, task)
-puck = Puck()
+puck = NewPuck()
 # Reset the robot
 goal_babbling.reset_robot()
 
@@ -36,7 +36,7 @@ max_history_len = args.history_len
 goal_positions = []
 count = 0
 
-file_path = '/home/sharath/sim2real-data-collection/'
+file_path = '/home/sharath/sim2real-data-recordings/'
 if not os.path.isdir(file_path + 'data/ErgoPusher/freq{}/{}'.format(args.freq, args.approach)):
     os.makedirs(file_path + 'data/ErgoPusher/freq{}/{}'.format(args.freq, args.approach))
 
@@ -58,7 +58,7 @@ for epi in range(total_steps):
         # goal = [random.uniform(-0.1436, 0.22358), random.uniform(0.016000, 0.25002)]  # Reacher goals
         # goal = [random.uniform(-0.135, 0.0), random.uniform(-0.081, 0.135)]  # Pusher goals
         puck.hard_reset()
-        goal = puck.normalize_puck() # goals are not corelating with tip positions. Take care of normalization
+        goal = puck.puck_pos() # goals are not corelating with tip positions. Take care of normalization
         if count < 10:
             action = goal_babbling.sample_action()
         else:
@@ -75,8 +75,7 @@ for epi in range(total_steps):
     end_pos.append(end_position)
     goal_positions.append(goal)
     actions[epi, :] = action  # Store the actions
-    sim_trajectories[epi, :] = observation  # Store the observations
-
+    sim_trajectories[epi, :] = np.hstack([observation, puck.normalize_puck()])  # Store the observations
 
 # Save the end positions, goals, actions and simulation trajectories.
 final_pos = np.asarray(end_pos)

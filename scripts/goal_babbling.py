@@ -3,6 +3,7 @@ import numpy as np
 from gym_ergojr.sim.single_robot import SingleRobot
 from gym_ergojr.sim.abstract_robot import PusherRobot
 import learners
+from sim.pusher_robot import PusherRobotNoisy
 
 
 class GoalBabbling(object):
@@ -11,7 +12,7 @@ class GoalBabbling(object):
         self.retries = num_retries
         self.task = task
         if task == 'pusher':
-            self.robot = PusherRobot()
+            self.robot = PusherRobotNoisy()
         else:
             self.robot = SingleRobot(debug=False)
         self.action_len = len(self.robot.motor_ids)
@@ -57,7 +58,7 @@ class GoalBabbling(object):
     def perform_action(self, action):
         self.robot.act(action)
         self.robot.step()
-        end_pos = self.robot.get_tip()[1:]
+        end_pos = self.robot.get_tip()
         obs = self.robot.observe()
         return action, end_pos, obs
 
